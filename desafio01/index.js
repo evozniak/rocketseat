@@ -3,19 +3,25 @@ const { json } = require('express');
 const app = express();
 app.use(express.json());
 
+//"mock" para testes sem database.
 let projetos = [{ id: "1", titulo: "Detalhe de implementação", tarefas: ["Nova tarefa"] }];
+//Quantidade de requisições desde o start do node, controlado com middleware.
 let qtdRequisicoes = 0;
 
+//A biblioteca express irá escutar a porta 3001.
 app.listen('3001', () => {
     console.log('Servidor ouvindo na porta 3001');
 });
 
+//Middleware GLOBAL para realizar a contagem de requisições e exibir no log.
+//Obrigatório a inclusão em todos os endpoints.
 function mdlContador(req, res, next) {
     qtdRequisicoes++;
     console.log(`Requisição Nº: ${qtdRequisicoes}, Método HTTP: ${req.method}.`);
     return next();
 };
 
+//Middleware para ser utilizado em endpoints precisam da validação do ID do projeto.
 function mdlValidarSeProjExiste(req, res, next) {
     const { id } = req.params;
     if (!projetos[id]) {
@@ -23,7 +29,6 @@ function mdlValidarSeProjExiste(req, res, next) {
     }
     return next();
 }
-
 
 app.post('/projects', mdlContador, (req, res) => {
     const { id } = req.body;
