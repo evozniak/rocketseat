@@ -32,7 +32,15 @@ class UsuarioController {
 		const esquema = Yup.object().shape({
 			nome: Yup.string(),
 			email: Yup.string().email(),
-			senhaAnterior: Yup.string().min(6),
+			senhaAnterior: Yup.string(),
+			senha: Yup.string()
+				.min(6)
+				.when('senhaAnterior', (senhAnterior, field) =>
+					senhaAnterior ? field.required() : field
+				),
+			senhaConfirmacao: Yup.string().when('senha', (senha, field) =>
+				senha ? field.required().oneOf([Yup.ref('senha')]) : field
+			),
 		});
 
 		if (!(await esquema.isValid(req.body))) {
@@ -41,7 +49,7 @@ class UsuarioController {
 
 		const usuario = await Usuario.findByPk(req.idUsuario);
 
-		if (email !== usuario.email) {
+		if (email && email !== usuario.email) {
 			const usuarioExiste = await Usuario.findOne({
 				where: { email },
 			});

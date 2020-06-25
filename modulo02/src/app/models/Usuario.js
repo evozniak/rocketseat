@@ -1,6 +1,5 @@
 import Sequelize, { Model } from 'sequelize';
 import bcrypt from 'bcryptjs';
-import { password } from '../../config/database';
 
 class Usuario extends Model {
 	static init(sequelize) {
