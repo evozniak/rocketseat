@@ -6,6 +6,12 @@ class Arquivo extends Model {
 			{
 				nome: Sequelize.STRING,
 				caminho: Sequelize.STRING,
+				url: {
+					type: Sequelize.VIRTUAL,
+					get() {
+						return `http://localhost:3333/arquivos/${this.caminho}`;
+					},
+				},
 			},
 			{
 				sequelize,
