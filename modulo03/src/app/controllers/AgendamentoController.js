@@ -1,8 +1,40 @@
 import * as Yup from 'yup';
+import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import pt from 'date-fns/locale/pt-BR';
 import Agendamento from '../models/Agendamento';
+import Arquivo from '../models/Arquivo';
 import Usuario from '../models/Usuario';
+import Notificacao from '../schemas/Notificacao';
 
 class AgendamentoController {
+	async index(req, res) {
+		const { pagina = 1 } = req.query;
+
+		const agendamentos = await Agendamento.findAll({
+			where: { id_usuario: req.idUsuario, cancelado_em: null },
+			order: ['data'],
+			attributes: ['id', 'data'],
+			limit: 20,
+			offset: (pagina - 1) * 10,
+			include: [
+				{
+					model: Usuario,
+					as: 'prestador',
+					attributes: ['id', 'nome'],
+					include: [
+						{
+							model: Arquivo,
+							as: 'avatar',
+							attributes: ['id', 'caminho', 'url'],
+						},
+					],
+				},
+			],
+		});
+
+		return res.json(agendamentos);
+	}
+
 	async armazenar(req, res) {
 		const esquema = Yup.object().shape({
 			id_prestador: Yup.number().required(),
@@ -18,20 +50,51 @@ class AgendamentoController {
 		/**
 		 * Validar se o id_prestador é um prestador.
 		 */
-		const ehFornecedor = await Usuario.findOne({
+		const ehPrestador = await Usuario.findOne({
 			where: { id: id_prestador, prestador: true },
 		});
 
-		if (!ehFornecedor) {
+		if (!ehPrestador) {
 			return res
 				.status(401)
 				.json({ erro: 'Você só pode criar agendamentos com prestadores.' });
 		}
 
+		const horaInicio = startOfHour(parseISO(data));
+		if (isBefore(horaInicio, new Date())) {
+			return res.status(400).json({ erro: 'O horario informado já passou.' });
+		}
+
+		const verificarDisponibilidade = await Agendamento.findOne({
+			where: {
+				id_prestador,
+				cancelado_em: null,
+				data: horaInicio,
+			},
+		});
+
+		if (verificarDisponibilidade) {
+			return res
+				.status(400)
+				.json({ erro: 'O horário informado já está reservado.' });
+		}
+
 		const agendamento = await Agendamento.create({
 			id_usuario: req.idUsuario,
 			id_prestador,
-			data,
+			data: horaInicio,
+		});
+
+		const usuario = await Usuario.findByPk(req.idUsuario);
+		const dataFormatada = format(
+			horaInicio,
+			"'dia' dd 'de' MMMM', às' H:mm'h'",
+			{ locale: pt }
+		);
+
+		await Notificacao.create({
+			conteudo: `Novo agendamento de ${usuario.nome} para ${dataFormatada}`,
+			usuario: id_prestador,
 		});
 
 		return res.json(agendamento);
