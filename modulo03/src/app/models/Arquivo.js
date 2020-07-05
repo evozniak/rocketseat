@@ -9,7 +9,7 @@ class Arquivo extends Model {
 				url: {
 					type: Sequelize.VIRTUAL,
 					get() {
-						return `http://localhost:3333/arquivos/${this.caminho}`;
+						return `${process.env.APP_URL}/arquivos/${this.caminho}`;
 					},
 				},
 			},

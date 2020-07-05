@@ -30,8 +30,12 @@ class Queue {
 		jobs.forEach((job) => {
 			const { bee, processar } = this.filas[job.chave];
 
-			bee.process(processar);
+			bee.on('failed', this.tratarErro).process(processar);
 		});
+	}
+
+	tratarErro(job, err) {
+		console.log(`Fila ${job.queue.name}: falhou`, err);
 	}
 }
 

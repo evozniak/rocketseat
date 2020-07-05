@@ -7,6 +7,7 @@ import SessaoController from './app/controllers/SessaoController';
 import ArquivoController from './app/controllers/ArquivoController';
 import PrestadorController from './app/controllers/PrestadorController';
 import NotificacaoControler from './app/controllers/NotificacaoController';
+import DisponivelController from './app/controllers/DisponivelController';
 
 import authMiddleware from './app/middlewares/auth';
 import AgendamentoController from './app/controllers/AgendamentoController';
@@ -23,6 +24,7 @@ routes.use(authMiddleware);
 routes.put('/usuarios', UsuarioController.atualizar);
 
 routes.get('/prestadores', PrestadorController.index);
+routes.get('/prestadores/:idPrestador/disponiveis', DisponivelController.index);
 
 routes.get('/agendamentos', AgendamentoController.index);
 routes.post('/agendamentos', AgendamentoController.armazenar);
