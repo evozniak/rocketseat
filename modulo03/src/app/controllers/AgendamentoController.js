@@ -1,10 +1,13 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format, subHours } from 'date-fns';
 import pt from 'date-fns/locale/pt-BR';
 import Agendamento from '../models/Agendamento';
 import Arquivo from '../models/Arquivo';
 import Usuario from '../models/Usuario';
 import Notificacao from '../schemas/Notificacao';
+
+import EmailCancelamento from '../jobs/EmailCancelamento';
+import Queue from '../../lib/Queue';
 
 class AgendamentoController {
 	async index(req, res) {
@@ -95,6 +98,48 @@ class AgendamentoController {
 		await Notificacao.create({
 			conteudo: `Novo agendamento de ${usuario.nome} para ${dataFormatada}`,
 			usuario: id_prestador,
+		});
+
+		return res.json(agendamento);
+	}
+
+	async deletar(req, res) {
+		const agendamento = await Agendamento.findByPk(req.params.id, {
+			include: [
+				{
+					model: Usuario,
+					as: 'prestador',
+					attributes: ['nome', 'email'],
+				},
+				{
+					model: Usuario,
+					as: 'usuario',
+					attributes: ['nome'],
+				},
+			],
+		});
+
+		if (agendamento.id_usuario !== req.idUsuario) {
+			return res.status(401).json({
+				erro: 'Você não tem permissão para excluir esse agendamento.',
+			});
+		}
+
+		const dataLimite = subHours(agendamento.data, 2);
+
+		if (isBefore(dataLimite, new Date())) {
+			return res.status(401).json({
+				erro:
+					'Você só pode cancelar agendamentos até duas horas de antecedência.',
+			});
+		}
+
+		agendamento.cancelado_em = new Date();
+
+		await agendamento.save();
+
+		await Queue.add(EmailCancelamento.chave, {
+			agendamento,
 		});
 
 		return res.json(agendamento);

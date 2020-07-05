@@ -26,6 +26,7 @@ routes.get('/prestadores', PrestadorController.index);
 
 routes.get('/agendamentos', AgendamentoController.index);
 routes.post('/agendamentos', AgendamentoController.armazenar);
+routes.delete('/agendamentos/:id', AgendamentoController.deletar);
 
 routes.get('/agenda', AgendaController.index);
 
