@@ -16,7 +16,6 @@ class SessaoController {
         }
 
         const { email, senha } = req.body;
-
         const usuario = await Usuario.findOne({ where: { email } });
 
         if (!usuario) {

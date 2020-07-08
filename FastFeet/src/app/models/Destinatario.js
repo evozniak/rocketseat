@@ -6,11 +6,7 @@ class Destinatario extends Model {
             {
                 nome: Sequelize.STRING,
                 rua: Sequelize.STRING,
-                numero: Sequelize.STRING,
                 complemento: Sequelize.STRING,
-                estado: Sequelize.STRING,
-                cidade: Sequelize.STRING,
-                cep: Sequelize.STRING,
             },
             {
                 sequelize,
