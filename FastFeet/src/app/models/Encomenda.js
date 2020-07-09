@@ -8,6 +8,7 @@ class Encomenda extends Model {
                 cancelado_em: Sequelize.DATE,
                 data_inicio: Sequelize.DATE,
                 data_fim: Sequelize.DATE,
+                created_at: Sequelize.DATE,
             },
             {
                 sequelize,

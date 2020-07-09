@@ -1,8 +1,11 @@
 import * as Yup from 'yup';
+import { format, parseISO } from 'date-fns';
 import Encomenda from '../models/Encomenda';
 import Arquivo from '../models/Arquivo';
 import Destinatario from '../models/Destinatario';
 import Entregador from '../models/Entregador';
+import Queue from '../../lib/Queue';
+import EmailNovaEntrega from '../jobs/EmailNovaEntrega';
 
 class EncomendaController {
     async buscar(req, res) {
@@ -40,6 +43,18 @@ class EncomendaController {
             });
         }
 
+        const { data_inicio: req_data_inicio } = req.body;
+        if (req_data_inicio) {
+            const req_data_parse = parseISO(req_data_inicio);
+            const hora = format(req_data_parse, 'hh');
+            if (hora < 8 || hora >= 18) {
+                return res.status(400).json({
+                    erro: 'A data de inicio deve ser entre 08:00H e 18:00H.',
+                });
+            }
+        }
+
+        const encomenda = await Encomenda.create(req.body);
         const {
             id,
             id_destinatario,
@@ -49,7 +64,27 @@ class EncomendaController {
             cancelado_em,
             data_inicio,
             data_fim,
-        } = await Encomenda.create(req.body);
+            created_at,
+        } = encomenda;
+
+        const entregador = await Entregador.findByPk(id_entregador);
+        console.log(created_at);
+        const encomEntregador = {
+            id,
+            id_destinatario,
+            id_entregador,
+            id_assinatura,
+            produto,
+            cancelado_em,
+            data_inicio,
+            data_fim,
+            created_at,
+            entregador: { nome: entregador.nome },
+        };
+
+        await Queue.add(EmailNovaEntrega.chave, {
+            encomEntregador,
+        });
 
         return res.json({
             id,
