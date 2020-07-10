@@ -9,6 +9,7 @@ import authMiddleware from './app/middlewares/auth';
 import EntregadorController from './app/controllers/EntregadorController';
 import ArquivoController from './app/controllers/ArquivoController';
 import EncomendaController from './app/controllers/EncomendaController';
+import DeliveryManController from './app/controllers/DeliveryManController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -32,5 +33,12 @@ routes.put('/encomendas', EncomendaController.atualizar);
 routes.delete('/encomendas/:id', EncomendaController.apagar);
 
 routes.post('/arquivos', upload.single('file'), ArquivoController.armazenar);
+
+routes.get('/deliveryman/:id', DeliveryManController.buscarPendentes);
+routes.get(
+    '/deliveryman/:id/deliveries',
+    DeliveryManController.buscarEntregues
+);
+routes.post('/deliveryman/retirar', DeliveryManController.retirar);
 
 export default routes;
