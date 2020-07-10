@@ -9,6 +9,7 @@ class EmailNovaEntrega {
 
     async processar({ data }) {
         const { encomEntregador: encomenda } = data;
+
         await Mail.enviarEmail({
             to: `${encomenda.entregador.nome} <${encomenda.entregador.email}>`,
             subject: 'Nova encomenda',
@@ -16,6 +17,7 @@ class EmailNovaEntrega {
             context: {
                 entregador: encomenda.entregador.nome,
                 usuario: encomenda.produto,
+                produto: encomenda.entregador.email,
                 data: format(
                     parseISO(encomenda.created_at),
                     "'dia' dd 'de' MMMM', às' H:mm'h'",
