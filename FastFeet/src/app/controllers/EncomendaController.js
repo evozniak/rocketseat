@@ -68,7 +68,7 @@ class EncomendaController {
         } = encomenda;
 
         const entregador = await Entregador.findByPk(id_entregador);
-        console.log(created_at);
+
         const encomEntregador = {
             id,
             id_destinatario,
@@ -79,7 +79,7 @@ class EncomendaController {
             data_inicio,
             data_fim,
             created_at,
-            entregador: { nome: entregador.nome },
+            entregador: { nome: entregador.nome, email: entregador.email },
         };
 
         await Queue.add(EmailNovaEntrega.chave, {
@@ -110,7 +110,7 @@ class EncomendaController {
         }
 
         const encomendaExiste = await Encomenda.findOne({
-            where: { nome: req.body.id },
+            where: { id: req.body.id },
         });
         if (encomendaExiste) {
             req.body.id = encomendaExiste.id;
