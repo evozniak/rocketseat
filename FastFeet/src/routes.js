@@ -40,5 +40,6 @@ routes.get(
     DeliveryManController.buscarEntregues
 );
 routes.post('/deliveryman/retirar', DeliveryManController.retirar);
+routes.post('/deliveryman/entregar', DeliveryManController.entregar);
 
 export default routes;

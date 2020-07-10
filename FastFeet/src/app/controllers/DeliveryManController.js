@@ -110,6 +110,42 @@ class DeliveryManController {
             mensagem: `Encomenda ID: ${encomenda.id} retirada em: ${encomenda.data_inicio}`,
         });
     }
+
+    async entregar(req, res) {
+        const esquema = Yup.object().shape({
+            id_encomenda: Yup.string().required(),
+            id_entregador: Yup.string().required(),
+            id_arquivo: Yup.string().required(),
+        });
+
+        if (!(await esquema.isValid(req.body))) {
+            return res.status(400).json({ erro: 'Erro de validação.' });
+        }
+
+        const entregador = await Entregador.findOne({
+            where: { id: req.body.id_entregador },
+        });
+
+        if (!entregador) {
+            return res.status(400).json({ erro: 'Entregador não encontrado.' });
+        }
+
+        const encomenda = await Encomenda.findByPk(req.body.id_encomenda);
+
+        if (encomenda.data_fim) {
+            return res
+                .status(400)
+                .json({ erro: 'A encomenda já foi entregue.' });
+        }
+
+        encomenda.data_fim = new Date();
+        encomenda.id_assinatura = req.body.id_arquivo;
+        encomenda.save();
+
+        return res.json({
+            mensagem: `Encomenda ID: ${encomenda.id} entrege em: ${encomenda.data_inicio}`,
+        });
+    }
 }
 
 export default new DeliveryManController();
