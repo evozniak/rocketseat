@@ -7,8 +7,16 @@ import Arquivo from '../app/models/Arquivo';
 import Encomenda from '../app/models/Encomenda';
 import Entregador from '../app/models/Entregador';
 import Usuario from '../app/models/Usuario';
+import ProblemasEntrega from '../app/models/ProblemasEntrega';
 
-const modelos = [Destinatario, Arquivo, Encomenda, Entregador, Usuario];
+const modelos = [
+    Destinatario,
+    Arquivo,
+    Encomenda,
+    Entregador,
+    Usuario,
+    ProblemasEntrega,
+];
 
 class Database {
     constructor() {

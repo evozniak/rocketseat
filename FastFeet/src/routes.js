@@ -10,6 +10,7 @@ import EntregadorController from './app/controllers/EntregadorController';
 import ArquivoController from './app/controllers/ArquivoController';
 import EncomendaController from './app/controllers/EncomendaController';
 import DeliveryManController from './app/controllers/DeliveryManController';
+import ProblemasEntregaController from './app/controllers/ProblemasEntregaController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -41,5 +42,12 @@ routes.get(
 );
 routes.post('/deliveryman/retirar', DeliveryManController.retirar);
 routes.post('/deliveryman/entregar', DeliveryManController.entregar);
+
+routes.get('/entregas/:id/problemas', ProblemasEntregaController.buscar);
+routes.post('/entregas/:id/problemas', ProblemasEntregaController.armazenar);
+routes.delete(
+    '/problemas/:id_problema/cancelar-entrega',
+    ProblemasEntregaController.cancelarEntrega
+);
 
 export default routes;
